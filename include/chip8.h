@@ -1,10 +1,12 @@
 //
 // Created by Carlitos on 9/16/2026.
 //
-
+using namespace std;
 #ifndef CHIP_8_EMU_CHIP8_H
 #define CHIP_8_EMU_CHIP8_H
 #include <cstdint>
+#include <chrono>
+#include <random>
 
 class Chip8 {
 public:
@@ -21,6 +23,8 @@ public:
     uint16_t opcode{};
     void loadROM(const char*filename);
     Chip8();
+    default_random_engine randGen;
+    uniform_int_distribution<uint8_t> randByte;
 };
 
 #endif //CHIP_8_EMU_CHIP8_H
