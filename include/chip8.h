@@ -25,6 +25,9 @@ public:
     Chip8();
     default_random_engine randGen;
     uniform_int_distribution<uint8_t> randByte;
+    void OP_00E0();
+    void OP_00EE();
+    void Chip8::OP_1NNN();
 };
 
 #endif //CHIP_8_EMU_CHIP8_H

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <cstdint>
 using namespace std;
-const unsigned int START_ADRESS = 0x200;
+const unsigned int START_ADDRESS = 0x200;
 const unsigned int FONTSET_SIZE = 80;
 const unsigned int FONTSET_START_ADDRESS = 0x50;    //0x50 because
 
@@ -22,7 +22,7 @@ void Chip8::loadROM(const char*filename) {
         file.close();
         // Load the ROM contents into the Chip8's memory, starting at 0x200
         for (long i=0;i<size;i++) {
-            memory[START_ADRESS + i] = buffer[i];
+            memory[START_ADDRESS + i] = buffer[i];
         }
         delete[] buffer;
     }
@@ -48,11 +48,22 @@ uint8_t fontset[FONTSET_SIZE] = {
 Chip8::Chip8()
     : randGen(chrono::system_clock::now().time_since_epoch().count()){
     //constructor: initializing PC
-    programCounter = START_ADRESS;
+    programCounter = START_ADDRESS;
     //loads fonts into memory
     for (unsigned int i=0;i<FONTSET_SIZE;i++) {
         memory[FONTSET_START_ADDRESS+i]=fontset[i];
     }
     // Initialize RNG
     randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
+}
+void Chip8::OP_00E0(){
+    for (int i=0;i<64*32;i++) displayMemory[i]=0;
+}
+void Chip8::OP_00EE() {
+    programCounter = stack[stackPointer-1];
+    stackPointer--;
+}
+void Chip8::OP_1NNN() {
+    uint16_t address = opcode & 0x0FFFu;
+    programCounter = address;
 }
