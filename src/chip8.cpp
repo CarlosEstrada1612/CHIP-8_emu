@@ -67,3 +67,111 @@ void Chip8::OP_1NNN() {
     uint16_t address = opcode & 0x0FFFu;
     programCounter = address;
 }
+void Chip8::OP_2NNN() {
+    stack[stackPointer] = programCounter;
+    stackPointer++;
+    uint16_t address = opcode & 0x0FFFu;
+    programCounter = address;
+}
+void Chip8::OP_3XKK() {
+    uint8_t Vx=(opcode & 0x0F00u)>>8u;
+    uint8_t byte = opcode & 0x00FFu;
+    if (registers[10]==opcode) programCounter=programCounter+2;
+}
+void Chip8::OP_4XKK() {
+    uint8_t Vx=(opcode & 0x0F00u)>>8u;
+    uint8_t byte = opcode & 0x00FFu;
+    if (registers[10]!=opcode) programCounter=programCounter+2;
+}
+void Chip8::OP_5XY0() {
+    uint8_t Vx= (opcode & 0x0F00)>>8u;
+    uint8_t Vy= (opcode & 0x00F0)>>4u;
+    if (registers[Vx]==registers[Vy]) programCounter=programCounter+2;
+}
+void Chip8::OP_6XKK() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t byte = opcode & 0x00FFu;
+    registers[Vx] = byte;
+}
+void Chip8::OP_7XKK() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t byte = opcode & 0x00FFu;
+    registers[Vx] = byte+registers[Vx];
+}
+void Chip8::OP_8XY0() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy= (opcode & 0x00F0)>>4u;
+    registers[Vx] = registers[Vy];
+}
+void Chip8::OP_8XY1() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy= (opcode & 0x00F0)>>4u;
+    registers[Vx] |= registers[Vy];
+}
+void Chip8::OP_8XY2() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy= (opcode & 0x00F0)>>4u;
+    registers[Vx] &= registers[Vy];
+}
+void Chip8::OP_8XY3() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy= (opcode & 0x00F0)>>4u;
+    registers[Vx] ^= registers[Vy];
+}
+void Chip8::OP_8XY4() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    uint16_t sum = registers[Vx] + registers[Vy];
+    if (sum>0xFF) registers[0xF] = 0x01;
+    else registers[0xF] = 0;
+    registers[Vx] = sum;
+}
+void Chip8::OP_8XY5() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    if (registers[Vx]>registers[Vy]) {
+        registers[0xF] = 0x01;
+    } else {
+        registers[0xF] = 0x00;
+    }
+    registers[Vx] -= registers[Vy];
+}
+void Chip8::OP_8XY6() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    registers[Vx] = registers[Vy]>>1u;
+    uint8_t bit = registers[Vy] & 0b00000001;
+    registers[0x0F] =bit;
+}
+void Chip8::OP_8XY7() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    if (registers[Vx]>registers[Vy]) {
+        registers[0xF] = 0x00;
+    } else {
+        registers[0xF] = 0x01;
+    }
+    registers[Vx] = registers[Vy]-registers[Vx];
+}
+void Chip8::OP_8XYE() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    registers[Vx] = registers[Vy]<<1u;
+    uint8_t bit = (registers[Vy] & 0b10000000)>>7u;
+    registers[0x0F] = bit;
+}
+void Chip8::OP_9XY0() {
+    uint8_t Vx = (opcode & 0x0F00u)>>8u;
+    uint8_t Vy = (opcode & 0x00F0)>>4u;
+    if (registers[Vx]!=registers[Vy]) {
+        programCounter+=2;
+    }
+}
+void Chip8::OP_ANNN() {
+    uint16_t nnn = opcode & 0x0FFFu;
+    indexRegister = nnn;
+}
+void Chip8::OP_BNNN() {
+    uint16_t nnn = opcode & 0x0FFFu;
+    programCounter = registers[0]+nnn;
+}
