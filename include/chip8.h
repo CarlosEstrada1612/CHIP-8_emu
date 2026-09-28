@@ -60,6 +60,17 @@ public:
     void OP_FX33();
     void OP_FX55();
     void OP_FX65();
+    void Table0();
+    void Table8();
+    void TableE();
+    void TableF();
+    void OP_NULL();
+    typedef void (Chip8::*Chip8_Function)();
+    Chip8_Function table[0xF + 1];
+    Chip8_Function table0[0xE + 1];
+    Chip8_Function table8[0xE + 1];
+    Chip8_Function tableE[0xE + 1];
+    Chip8_Function tableF[0x65 + 1];
 };
 
 #endif //CHIP_8_EMU_CHIP8_H
