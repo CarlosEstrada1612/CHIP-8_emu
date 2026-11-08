@@ -11,7 +11,9 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 add_executable(CHIP_8_emu
         src/main.cpp
         src/chip8.cpp
-        include/chip8.h)
+        include/chip8.h
+        src/Platform.cpp
+        include/Platform.h)
 
 target_include_directories(CHIP_8_emu PRIVATE include)
 

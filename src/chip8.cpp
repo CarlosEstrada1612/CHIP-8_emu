@@ -4,16 +4,16 @@
 #include "../include/chip8.h"
 #include <fstream>
 #include <cstdint>
+#include <iostream>
 using namespace std;
-const unsigned int START_ADDRESS = 0x200;
-const unsigned int FONTSET_SIZE = 80;
-const unsigned int FONTSET_START_ADDRESS = 0x50;
-const unsigned int VIDEO_WIDTH = 64;
-const unsigned int VIDEO_HEIGHT = 32;
 
 void Chip8::loadROM(const char*filename) {
     // Open the file as a stream of binary and move the file pointer to the end
     ifstream file(filename,ios::binary | ios::ate);
+    if (!file.is_open()) {
+        cerr << "No se pudo abrir la ROM: " << filename << '\n';
+        exit(EXIT_FAILURE);
+    }
     if (file.is_open()) {
         // Get size of file and allocate a buffer to hold the contents
         streampos size = file.tellg();
@@ -26,9 +26,10 @@ void Chip8::loadROM(const char*filename) {
         for (long i=0;i<size;i++) {
             memory[START_ADDRESS + i] = buffer[i];
         }
-        delete buffer;
+        delete [] buffer;
     }
 }
+
 uint8_t fontset[FONTSET_SIZE] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -47,6 +48,7 @@ uint8_t fontset[FONTSET_SIZE] = {
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
+
 Chip8::Chip8()
     : randGen(chrono::system_clock::now().time_since_epoch().count()){
     //constructor: initializing PC
@@ -56,7 +58,7 @@ Chip8::Chip8()
         memory[FONTSET_START_ADDRESS+i]=fontset[i];
     }
     // Initialize RNG
-    randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
+    randByte = uniform_int_distribution<int>(0, 255);
     // Set up function pointer table
     table[0x0] = &Chip8::Table0;
     table[0x1] = &Chip8::OP_1NNN;
@@ -107,6 +109,7 @@ Chip8::Chip8()
     tableF[0x55] = &Chip8::OP_FX55;
     tableF[0x65] = &Chip8::OP_FX65;
 }
+
 void Chip8::OP_00E0(){
     for (int i=0;i<64*32;i++) displayMemory[i]=0;
 }
@@ -217,7 +220,7 @@ void Chip8::OP_BNNN() {
 void Chip8::OP_CXKK() {
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     uint8_t Byte = opcode & 0x00FFu;
-    registers[Vx] = randByte(randGen)+Byte;
+    registers[Vx] = randByte(randGen) & Byte;
 }
 void Chip8::OP_DXYN() {
     uint8_t Vx = (opcode & 0x0F00u)>>8u;
@@ -227,8 +230,10 @@ void Chip8::OP_DXYN() {
     uint8_t yPos = registers[Vy]%VIDEO_HEIGHT;
     registers[0xF] = 0;
     for (unsigned int row=0; row<height; row++) {
+        if (yPos + row >= VIDEO_HEIGHT) break;
         uint8_t spriteByte = memory[indexRegister+row];
         for (unsigned int col=0; col<8; col++) {
+            if (xPos + col >= VIDEO_WIDTH) break;
             uint8_t spritePixel = spriteByte & (0x80 >> col);
             uint32_t *screenPixel = &displayMemory[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
             if (spritePixel) {
@@ -306,6 +311,7 @@ void Chip8::OP_FX65(){
     uint8_t Vx = (opcode & 0x0F00u) >> 8u;
     for (uint8_t i = 0; i <= Vx; ++i) registers[i] = memory[indexRegister + i];
 }
+
 void Chip8::Table0() {
     ((*this).*(table0[opcode & 0x000Fu]))();
 }
@@ -318,4 +324,13 @@ void Chip8::TableE() {
 void Chip8::TableF() {
     ((*this).*(tableF[opcode & 0x00FFu]))();
 }
-void Chip8::OP_NULL() {}
+void Chip8::OP_NULL() {
+}
+
+void Chip8::Cycle() {
+    opcode = (memory[programCounter]<<8u)|memory[programCounter+1];
+    programCounter += 2;
+    ((*this).*(table[(opcode & 0xF000u) >> 12u]))();
+    if (delayTimer > 0) --delayTimer;
+    if (soundTimer > 0) --soundTimer;
+}

@@ -7,9 +7,14 @@ using namespace std;
 #include <cstdint>
 #include <chrono>
 #include <random>
+const unsigned int START_ADDRESS = 0x200;
+const unsigned int FONTSET_SIZE = 80;
+const unsigned int FONTSET_START_ADDRESS = 0x50;
+const unsigned int VIDEO_WIDTH = 64;
+const unsigned int VIDEO_HEIGHT = 32;
 
 class Chip8 {
-private:
+public:
     uint8_t registers[16]{};
     uint8_t memory[4096]{};
     uint16_t indexRegister{};
@@ -18,12 +23,11 @@ private:
     uint8_t stackPointer{};
     uint8_t delayTimer{};
     uint8_t soundTimer{};
-    uint16_t inputKeys[16]{};
+    uint8_t inputKeys[16]{};
     uint32_t displayMemory[64*32]{};
     uint16_t opcode{};
     default_random_engine randGen;
-    uniform_int_distribution<uint8_t> randByte;
-public:
+    uniform_int_distribution<int> randByte;
     void loadROM(const char*filename);
     Chip8();
     void OP_00E0();
@@ -71,6 +75,7 @@ public:
     Chip8_Function table8[0xE + 1];
     Chip8_Function tableE[0xE + 1];
     Chip8_Function tableF[0x65 + 1];
+    void Cycle();
 };
 
 #endif //CHIP_8_EMU_CHIP8_H
