@@ -10,10 +10,6 @@ using namespace std;
 void Chip8::loadROM(const char*filename) {
     // Open the file as a stream of binary and move the file pointer to the end
     ifstream file(filename,ios::binary | ios::ate);
-    if (!file.is_open()) {
-        cerr << "No se pudo abrir la ROM: " << filename << '\n';
-        exit(EXIT_FAILURE);
-    }
     if (file.is_open()) {
         // Get size of file and allocate a buffer to hold the contents
         streampos size = file.tellg();
@@ -27,6 +23,9 @@ void Chip8::loadROM(const char*filename) {
             memory[START_ADDRESS + i] = buffer[i];
         }
         delete [] buffer;
+    } else {
+        cout<<"Error no se pudo abrir el ROM: "<<filename<<endl;
+        exit(EXIT_FAILURE);
     }
 }
 

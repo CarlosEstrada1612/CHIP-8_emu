@@ -11,6 +11,7 @@ Platform::Platform(char const* title, int windowWidth, int windowHeight, int tex
     renderer = SDL_CreateRenderer(window, nullptr);
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
                                 textureWidth, textureHeight);
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 }
 Platform::~Platform() {
     SDL_DestroyTexture(texture);
